@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Downloader</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 30px; color: #e94560; }
+    .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+    input { flex: 1; padding: 15px; border: none; border-radius: 8px; font-size: 16px; background: #16213e; color: #fff; }
+    button { padding: 15px 30px; background: #e94560; border: none; border-radius: 8px; color: #fff; font-size: 16px; cursor: pointer; }
+    button:hover { background: #c73e54; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    .result { background: #16213e; border-radius: 12px; padding: 20px; margin-top: 20px; }
+    .video-info { display: flex; gap: 20px; margin-bottom: 20px; }
+    .video-info img { width: 200px; border-radius: 8px; }
+    .video-details h2 { margin-bottom: 10px; }
+    .video-details p { color: #888; margin-bottom: 5px; }
+    .formats { margin-top: 20px; }
+    .formats h3 { margin-bottom: 15px; color: #e94560; }
+    .format-list { display: grid; gap: 10px; }
+    .format-item { display: flex; justify-content: space-between; align-items: center; background: #0f3460; padding: 15px; border-radius: 8px; }
+    .format-item span { color: #ccc; }
+    .format-item button { padding: 10px 20px; font-size: 14px; }
+    .loading { text-align: center; padding: 40px; }
+    .error { background: #5c1a1a; padding: 15px; border-radius: 8px; margin-top: 20px; }
+    .api-link { text-align: center; margin-top: 30px; }
+    .api-link a { color: #e94560; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>YouTube Downloader</h1>
+    <div class="input-group">
+      <input type="text" id="urlInput" placeholder="Paste YouTube URL here...">
+      <button id="fetchBtn" onclick="fetchInfo()">Get Formats</button>
+    </div>
+    <div id="loading" class="loading hidden">Loading...</div>
+    <div id="error" class="error hidden"></div>
+    <div id="result" class="result hidden"></div>
+    <div class="api-link">
+      <p>API Documentation: <a href="/api/docs" target="_blank">/api/docs</a></p>
+    </div>
+  </div>
+  <script>
+    async function fetchInfo() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return alert('Please enter a YouTube URL');
+      
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('result').classList.add('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('fetchBtn').disabled = true;
+      
+      try {
+        const res = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        
+        if (data.error) throw new Error(data.error);
+        
+        let html = `
+          <div class="video-info">
+            <img src="${data.thumbnail}" alt="Thumbnail">
+            <div class="video-details">
+              <h2>${data.title}</h2>
+              <p>Channel: ${data.channel || 'N/A'}</p>
+              <p>Duration: ${data.duration}</p>
+              <p>Views: ${data.view_count?.toLocaleString() || 'N/A'}</p>
+            </div>
+          </div>
+          <div class="formats">
+            <h3>Video Formats</h3>
+            <div class="format-list">
+              ${data.video_formats.map(f => `
+                <div class="format-item">
+                  <span>${f.resolution} (${f.ext})</span>
+                  <button onclick="getDownload('${url}', '${f.format_id}')">Download</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="formats">
+            <h3>Audio Formats</h3>
+            <div class="format-list">
+              ${data.audio_formats.map(f => `
+                <div class="format-item">
+                  <span>${f.bitrate} (${f.ext})</span>
+                  <button onclick="getDownload('${url}', '${f.format_id}')">Download</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        
+        document.getElementById('result').innerHTML = html;
+        document.getElementById('result').classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+        document.getElementById('error').classList.remove('hidden');
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('fetchBtn').disabled = false;
+      }
+    }
+    
+    async function getDownload(url, formatId) {
+      try {
+        const res = await fetch(`/api/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}`);
+        const data = await res.json();
+        
+        if (data.error) throw new Error(data.error);
+        
+        if (data.download_urls && data.download_urls.length > 0) {
+          window.open(data.download_urls[0], '_blank');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+    
+    document.getElementById('urlInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') fetchInfo();
+    });
+  </script>
+</body>
+</html>
