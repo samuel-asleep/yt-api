@@ -3,6 +3,8 @@ const { execSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+const PROXY_URL = process.env.PROXY_URL || '';
+
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
@@ -131,7 +133,8 @@ app.get('/api/info', async (req, res) => {
   }
 
   try {
-    const cmd = `yt-dlp --dump-json "${url}" 2>/dev/null`;
+    const proxyArg = PROXY_URL ? `--proxy "${PROXY_URL}"` : '';
+    const cmd = `yt-dlp ${proxyArg} --dump-json "${url}" 2>/dev/null`;
     const output = execSync(cmd, { encoding: 'utf-8', timeout: 60000 });
     const info = JSON.parse(output);
 
@@ -194,11 +197,12 @@ app.get('/api/download', async (req, res) => {
   }
 
   try {
-    const infoCmd = `yt-dlp --dump-json "${url}" 2>/dev/null`;
+    const proxyArg = PROXY_URL ? `--proxy "${PROXY_URL}"` : '';
+    const infoCmd = `yt-dlp ${proxyArg} --dump-json "${url}" 2>/dev/null`;
     const infoOutput = execSync(infoCmd, { encoding: 'utf-8', timeout: 60000 });
     const info = JSON.parse(infoOutput);
 
-    const urlCmd = `yt-dlp -f "${format_id}" --get-url "${url}" 2>/dev/null`;
+    const urlCmd = `yt-dlp ${proxyArg} -f "${format_id}" --get-url "${url}" 2>/dev/null`;
     const downloadUrl = execSync(urlCmd, { encoding: 'utf-8', timeout: 60000 }).trim();
 
     const urls = downloadUrl.split('\n').filter(u => u.trim());
