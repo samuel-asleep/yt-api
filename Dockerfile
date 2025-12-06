@@ -4,7 +4,9 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     python3 \
+    python3-pip \
     ffmpeg \
+    tor \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -19,7 +21,10 @@ COPY . .
 
 EXPOSE 5000
 
-ENV NODE_ENV=production
-ENV USE_PROXY=true
+RUN chmod +x start-with-tor.sh
 
-CMD ["node", "index.js"]
+ENV NODE_ENV=production
+ENV USE_TOR=true
+ENV PROXY_URL=socks5://127.0.0.1:9050
+
+CMD ["./start-with-tor.sh"]
