@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+*.md
+Dockerfile
+.dockerignore
+*.zip
+start.sh
+.replit
+replit.nix
