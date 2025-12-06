@@ -37,6 +37,8 @@ const openApiSpec = {
                     title: { type: 'string' },
                     thumbnail: { type: 'string' },
                     duration: { type: 'string' },
+                    channel: { type: 'string' },
+                    view_count: { type: 'integer' },
                     video_formats: {
                       type: 'array',
                       items: {
@@ -92,15 +94,19 @@ const openApiSpec = {
         ],
         responses: {
           '200': {
-            description: 'Download URL',
+            description: 'Download URLs',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
-                    download_url: { type: 'string' },
                     title: { type: 'string' },
-                    ext: { type: 'string' }
+                    download_urls: { 
+                      type: 'array',
+                      items: { type: 'string' },
+                      description: 'Array of direct download URLs (video and audio streams)'
+                    },
+                    format_id: { type: 'string' }
                   }
                 }
               }
@@ -173,8 +179,7 @@ app.get('/api/info', async (req, res) => {
       channel: info.channel,
       view_count: info.view_count,
       video_formats: defaultVideoFormats,
-      audio_formats: defaultAudioFormats,
-      all_formats: { video: videoFormats, audio: audioFormats }
+      audio_formats: defaultAudioFormats
     });
   } catch (error) {
     console.error('Error:', error.message);
