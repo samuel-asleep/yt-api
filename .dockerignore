@@ -8,6 +8,5 @@ npm-debug.log
 Dockerfile
 .dockerignore
 *.zip
-start.sh
 .replit
 replit.nix

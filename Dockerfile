@@ -21,7 +21,10 @@ COPY . .
 
 EXPOSE 5000
 
-ENV NODE_ENV=production
-ENV USE_TOR=false
+RUN chmod +x start-with-tor.sh
 
-CMD ["node", "index.js"]
+ENV NODE_ENV=production
+ENV USE_TOR=true
+ENV PROXY_URL=socks5://127.0.0.1:9050
+
+CMD ["./start-with-tor.sh"]
