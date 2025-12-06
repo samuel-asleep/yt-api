@@ -3,7 +3,8 @@ const { execSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const PROXY_URL = process.env.PROXY_URL || '';
+const PROXY_URL = process.env.PROXY_URL || 'socks5://127.0.0.1:9050';
+const USE_TOR = process.env.USE_TOR !== 'false';
 
 const app = express();
 app.use(express.json());
@@ -133,9 +134,10 @@ app.get('/api/info', async (req, res) => {
   }
 
   try {
-    const proxyArg = PROXY_URL ? `--proxy "${PROXY_URL}"` : '';
+    const proxyArg = USE_TOR && PROXY_URL ? `--proxy "${PROXY_URL}"` : '';
     const cmd = `yt-dlp ${proxyArg} --dump-json "${url}" 2>/dev/null`;
-    const output = execSync(cmd, { encoding: 'utf-8', timeout: 60000 });
+    console.log(`Fetching info with${proxyArg ? ' Tor proxy' : 'out proxy'}: ${url}`);
+    const output = execSync(cmd, { encoding: 'utf-8', timeout: 120000 });
     const info = JSON.parse(output);
 
     const videoFormats = [];
@@ -197,13 +199,14 @@ app.get('/api/download', async (req, res) => {
   }
 
   try {
-    const proxyArg = PROXY_URL ? `--proxy "${PROXY_URL}"` : '';
+    const proxyArg = USE_TOR && PROXY_URL ? `--proxy "${PROXY_URL}"` : '';
+    console.log(`Fetching download URL with${proxyArg ? ' Tor proxy' : 'out proxy'}: ${url}`);
     const infoCmd = `yt-dlp ${proxyArg} --dump-json "${url}" 2>/dev/null`;
-    const infoOutput = execSync(infoCmd, { encoding: 'utf-8', timeout: 60000 });
+    const infoOutput = execSync(infoCmd, { encoding: 'utf-8', timeout: 120000 });
     const info = JSON.parse(infoOutput);
 
     const urlCmd = `yt-dlp ${proxyArg} -f "${format_id}" --get-url "${url}" 2>/dev/null`;
-    const downloadUrl = execSync(urlCmd, { encoding: 'utf-8', timeout: 60000 }).trim();
+    const downloadUrl = execSync(urlCmd, { encoding: 'utf-8', timeout: 120000 }).trim();
 
     const urls = downloadUrl.split('\n').filter(u => u.trim());
 

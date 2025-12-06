@@ -7,7 +7,7 @@ requiredFiles = [".replit", "replit.nix", "package.json", "package-lock.json"]
 
 [nix]
 channel = "stable-24_11"
-packages = ["jq", "yt-dlp", "ffmpeg"]
+packages = ["jq", "yt-dlp", "ffmpeg", "tor"]
 
 [deployment]
 run = ["node", "index.js"]
@@ -33,18 +33,14 @@ args = "YouTube Downloader API"
 name = "YouTube Downloader API"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node index.js"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash start.sh"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 37729
-externalPort = 3000
