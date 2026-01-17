@@ -1,17 +1,27 @@
 {
-  "name": "nodejs",
+  "name": "yt-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "YouTube info and streaming API powered by yt-dlp.",
+  "type": "module",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "@fastify/rate-limit": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1"
+  },
+  "devDependencies": {
     "@types/node": "^22.13.11",
-    "express": "^5.2.1"
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.9"
   }
 }
