@@ -23,13 +23,11 @@ RUN python3 -m pip install --no-cache-dir yt-dlp
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-COPY --from=build /app/dist ./dist
-COPY README.md ./
-COPY .env.example ./
+COPY . .
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=5000
 
-EXPOSE 3000
+EXPOSE 5000
 
 CMD ["node", "dist/server.js"]
